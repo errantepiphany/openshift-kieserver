@@ -36,13 +36,19 @@ public final class ConversationId {
 
     private static final Method FROM;
     private static final Method FROM_STRING;
+    private static final Method GET_KIE_SERVER_ID;
     private static final Method GET_CONTAINER_ID;
+    private static final Method GET_RELEASE_ID;
+    private static final Method GET_UNIQUE_STRING;
 
     static {
         String kieConversationIdTypeHeader = null;
         Method from = null;
         Method fromString = null;
+        Method getKieServerId = null;
         Method getContainerId = null;
+        Method getReleaseId = null;
+        Method getUniqueString = null;
         if (isSupported()) {
             try {
                 Field field = KieServerConstants.class.getDeclaredField("KIE_CONVERSATION_ID_TYPE_HEADER");
@@ -53,8 +59,14 @@ public final class ConversationId {
                 from.setAccessible(true);
                 fromString = clazz.getDeclaredMethod("fromString", String.class);
                 fromString.setAccessible(true);
+                getKieServerId = clazz.getDeclaredMethod("getKieServerId");
+                getKieServerId.setAccessible(true);
                 getContainerId = clazz.getDeclaredMethod("getContainerId");
                 getContainerId.setAccessible(true);
+                getReleaseId = clazz.getDeclaredMethod("getReleaseId");
+                getReleaseId.setAccessible(true);
+                getUniqueString = clazz.getDeclaredMethod("getUniqueString");
+                getUniqueString.setAccessible(true);
             } catch (Throwable t) {
                 LOGGER.warn(t.getMessage());
             }
@@ -65,7 +77,10 @@ public final class ConversationId {
         KIE_CONVERSATION_ID_TYPE_HEADER = kieConversationIdTypeHeader;
         FROM = from;
         FROM_STRING = fromString;
+        GET_KIE_SERVER_ID = getKieServerId;
         GET_CONTAINER_ID = getContainerId;
+        GET_RELEASE_ID = getReleaseId;
+        GET_UNIQUE_STRING = getUniqueString;
     }
 
     public static boolean isSupported() {
@@ -77,19 +92,6 @@ public final class ConversationId {
 
     private ConversationId(Object conversationId) {
         this.conversationId = conversationId;
-    }
-
-    public String getContainerId() {
-        if (GET_CONTAINER_ID != null) {
-            try {
-                return (String)GET_CONTAINER_ID.invoke(conversationId);
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return null;
     }
 
     public static ConversationId from(String kieServerId, String containerId, ReleaseId releaseId) {
@@ -111,6 +113,58 @@ public final class ConversationId {
             try {
                 Object conversationId = FROM_STRING.invoke(null, conversationIdString);
                 return conversationId != null ? new ConversationId(conversationId) : null;
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+    }
+
+    public String getKieServerId() {
+        if (GET_KIE_SERVER_ID != null) {
+            try {
+                return (String)GET_KIE_SERVER_ID.invoke(conversationId);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+    }
+
+    public String getContainerId() {
+        if (GET_CONTAINER_ID != null) {
+            try {
+                return (String)GET_CONTAINER_ID.invoke(conversationId);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+    }
+
+    public ReleaseId getReleaseId() {
+        if (GET_RELEASE_ID != null) {
+            try {
+                return (ReleaseId)GET_RELEASE_ID.invoke(conversationId);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+    }
+
+    public String getUniqueString() {
+        if (GET_UNIQUE_STRING != null) {
+            try {
+                return (String)GET_UNIQUE_STRING.invoke(conversationId);
             } catch (InvocationTargetException e) {
                 throw new RuntimeException(e);
             } catch (IllegalAccessException e) {

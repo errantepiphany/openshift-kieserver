@@ -52,19 +52,32 @@ public class RedirectServletRequestWrapper extends HttpServletRequestWrapper {
     public RedirectServletRequestWrapper(HttpServletRequest request, String redirectDeploymentId, Map<String, String[]> parameterOverrides) {
         super(request);
         this.request = request;
-        String redirectConversationId = null;
+        this.conversationId = createConversationId(redirectDeploymentId);
+        this.parameterOverrides = (parameterOverrides != null ? parameterOverrides : Collections.<String, String[]>emptyMap());
+    }
+
+    private String createConversationId(String redirectDeploymentId) {
+        String redirectConversationIdString = null;
         if (redirectDeploymentId != null && CONVERSATION_ID_SUPPORTED) {
+            String oldConversationIdString = request.getHeader(KIE_CONVERSATION_ID_TYPE_HEADER);
+            if (oldConversationIdString != null) {
+                ConversationId oldConversationId = ConversationId.fromString(oldConversationIdString);
+                String oldKieServerId = oldConversationId.getKieServerId();
+                String oldContainerId = oldConversationId.getContainerId();
+                ReleaseId oldReleaseId = oldConversationId.getReleaseId();
+                String oldUniqueString = oldConversationId.getUniqueString();
+                System.out.println(String.format("********** oldKieServerId=%s, oldContainerId=%s, oldReleaseId=%s, oldUniqueString=%s", oldKieServerId, oldContainerId, oldReleaseId, oldUniqueString));
+            }
             KieContainerInstanceImpl container = KieServerLocator.getInstance().getServerRegistry().getContainer(redirectDeploymentId);
             if (container != null) {
                 ReleaseId releaseId = container.getResource().getResolvedReleaseId();
                 if (releaseId == null) {
                     releaseId = container.getResource().getReleaseId();
                 }
-                redirectConversationId = ConversationId.from(KieServerEnvironment.getServerId(), redirectDeploymentId, releaseId).toString();
+                redirectConversationIdString = ConversationId.from(KieServerEnvironment.getServerId(), redirectDeploymentId, releaseId).toString();
             }
         }
-        this.conversationId = redirectConversationId;
-        this.parameterOverrides = (parameterOverrides != null ? parameterOverrides : Collections.<String, String[]>emptyMap());
+        return redirectConversationIdString;
     }
 
     @Override
